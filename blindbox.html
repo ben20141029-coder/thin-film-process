@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>抽盲盒開箱 🎁 Squidward IN SPACE</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #111;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      font-family: -apple-system, 'Noto Sans TC', 'Microsoft JhengHei', sans-serif;
+      overflow: hidden;
+    }
+
+    /* IG phone frame */
+    .phone-frame {
+      width: 390px;
+      height: 844px;
+      position: relative;
+      border-radius: 44px;
+      overflow: hidden;
+      background: #000;
+      box-shadow: 0 0 0 2px #333, 0 0 60px rgba(255,100,200,0.3);
+    }
+
+    /* Story container */
+    .story {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Slides */
+    .slide {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      pointer-events: none;
+    }
+    .slide.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .slide.exit-left  { animation: exitLeft  0.4s ease forwards; }
+    .slide.enter-right{ animation: enterRight 0.4s ease forwards; }
+
+    @keyframes exitLeft   { to { transform: translateX(-30px); opacity: 0; } }
+    @keyframes enterRight { from { transform: translateX(30px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+    /* Photo background */
+    .slide-bg {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center top;
+      display: block;
+    }
+
+    /* Dark overlay */
+    .overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to bottom,
+        rgba(0,0,0,0.35) 0%,
+        transparent 30%,
+        transparent 60%,
+        rgba(0,0,0,0.6) 100%
+      );
+    }
+
+    /* IG progress bars */
+    .progress-bars {
+      position: absolute;
+      top: 14px;
+      left: 10px;
+      right: 10px;
+      display: flex;
+      gap: 4px;
+      z-index: 20;
+    }
+    .bar-track {
+      flex: 1;
+      height: 2.5px;
+      background: rgba(255,255,255,0.35);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%;
+      background: #fff;
+      border-radius: 2px;
+      width: 0%;
+      transition: width 0.1s linear;
+    }
+    .bar-fill.done  { width: 100%; transition: none; }
+    .bar-fill.active{ /* driven by JS */ }
+
+    /* IG top bar */
+    .ig-top {
+      position: absolute;
+      top: 26px;
+      left: 12px;
+      right: 12px;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      z-index: 20;
+    }
+    .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+      padding: 2px;
+      flex-shrink: 0;
+    }
+    .avatar img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #000;
+    }
+    .ig-name { color: #fff; font-size: 14px; font-weight: 600; flex: 1; text-shadow: 0 1px 3px rgba(0,0,0,0.6); }
+    .ig-time { color: rgba(255,255,255,0.7); font-size: 12px; }
+    .ig-close { color: #fff; font-size: 22px; opacity: 0.8; cursor: pointer; padding: 4px; }
+
+    /* Music pill */
+    .music-pill {
+      position: absolute;
+      top: 80px;
+      right: 14px;
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(8px);
+      border-radius: 20px;
+      padding: 5px 10px 5px 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      z-index: 20;
+      animation: wiggle 2s infinite;
+    }
+    .music-pill .note { font-size: 14px; animation: spin 3s linear infinite; display: inline-block; }
+    .music-pill span { color: #fff; font-size: 11px; font-weight: 500; max-width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    @keyframes wiggle { 0%,100%{transform:rotate(-3deg)} 50%{transform:rotate(3deg)} }
+    @keyframes spin   { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+
+    /* Bottom bar */
+    .ig-bottom {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 14px 16px 30px;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .reply-box {
+      flex: 1;
+      border: 1.5px solid rgba(255,255,255,0.5);
+      border-radius: 24px;
+      padding: 9px 16px;
+      color: rgba(255,255,255,0.7);
+      font-size: 14px;
+      background: transparent;
+      backdrop-filter: blur(4px);
+    }
+    .heart-btn { font-size: 26px; cursor: pointer; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+    .share-btn { font-size: 22px; cursor: pointer; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+
+    /* ───── STICKER SYSTEM ───── */
+    .sticker {
+      position: absolute;
+      z-index: 15;
+      pointer-events: none;
+      animation: popIn 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+    @keyframes popIn { from{transform:scale(0) rotate(-10deg)} to{transform:scale(1) rotate(0deg)} }
+
+    .sticker-text {
+      background: #fff;
+      color: #111;
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 18px;
+      font-weight: 800;
+      white-space: nowrap;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+      letter-spacing: -0.3px;
+    }
+    .sticker-text.neon {
+      background: linear-gradient(135deg, #ff6fd8, #ff4b8b);
+      color: #fff;
+    }
+    .sticker-text.yellow {
+      background: #FFE234;
+      color: #111;
+      transform: rotate(-4deg);
+    }
+    .sticker-text.blue {
+      background: #4FC3F7;
+      color: #fff;
+    }
+    .sticker-text.dark {
+      background: rgba(0,0,0,0.7);
+      color: #fff;
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    .sticker-emoji {
+      font-size: 52px;
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+      animation: float 3s ease-in-out infinite, popIn 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+
+    .sticker-tag {
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.3);
+      color: #fff;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    /* countdown */
+    .countdown-num {
+      font-size: 120px;
+      font-weight: 900;
+      color: #fff;
+      text-shadow: 0 0 40px rgba(255,100,200,0.8), 0 4px 20px rgba(0,0,0,0.5);
+      animation: countPop 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+    @keyframes countPop { from{transform:scale(2);opacity:0} to{transform:scale(1);opacity:1} }
+
+    /* big reveal text */
+    .reveal-text {
+      font-size: 52px;
+      font-weight: 900;
+      background: linear-gradient(135deg, #FFE234, #FF6FD8, #FF4B8B);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-align: center;
+      text-shadow: none;
+      animation: revealPop 0.6s cubic-bezier(0.34,1.56,0.64,1) both;
+      letter-spacing: -1px;
+    }
+    @keyframes revealPop { from{transform:scale(0.3) rotate(-15deg);opacity:0} to{transform:scale(1) rotate(0deg);opacity:1} }
+
+    /* confetti */
+    .confetti-wrap {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 16;
+    }
+    .confetti-piece {
+      position: absolute;
+      top: -20px;
+      width: 10px;
+      height: 14px;
+      border-radius: 2px;
+      animation: fallDown linear forwards;
+    }
+    @keyframes fallDown {
+      to { transform: translateY(900px) rotate(720deg); opacity: 0; }
+    }
+
+    /* Slide-specific layouts */
+    .center-flex {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      z-index: 15;
+    }
+
+    /* pulse ring on reveal */
+    .pulse-ring {
+      position: absolute;
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      border: 3px solid rgba(255,100,200,0.6);
+      animation: ringPulse 1.2s ease-out infinite;
+    }
+    @keyframes ringPulse {
+      0%  { transform: scale(0.9); opacity: 1; }
+      100%{ transform: scale(2);   opacity: 0; }
+    }
+
+    /* Slide 0 — title card */
+    #slide-0 { background: linear-gradient(160deg, #1a0030, #3d0066, #000); }
+    .title-card {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      z-index: 15;
+    }
+    .title-main {
+      font-size: 42px;
+      font-weight: 900;
+      color: #fff;
+      text-align: center;
+      text-shadow: 0 0 30px rgba(255,100,200,0.8);
+      line-height: 1.2;
+    }
+    .title-sub {
+      font-size: 17px;
+      color: rgba(255,255,255,0.7);
+      text-align: center;
+      letter-spacing: 0.05em;
+    }
+    .title-badge {
+      background: linear-gradient(135deg, #ff6fd8, #ff4b8b);
+      color: #fff;
+      padding: 8px 24px;
+      border-radius: 30px;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+    }
+    .sparkle-bg {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+    }
+    .sparkle {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: #fff;
+      border-radius: 50%;
+      animation: twinkle linear infinite;
+    }
+    @keyframes twinkle {
+      0%,100%{ opacity: 0; transform: scale(0); }
+      50%     { opacity: 1; transform: scale(1); }
+    }
+
+    /* tap zones */
+    .tap-left, .tap-right {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 40%;
+      z-index: 25;
+      cursor: pointer;
+    }
+    .tap-left  { left: 0; }
+    .tap-right { right: 0; }
+
+    /* Like animation */
+    .heart-float {
+      position: absolute;
+      font-size: 40px;
+      pointer-events: none;
+      z-index: 30;
+      animation: floatUp 1s ease-out forwards;
+    }
+    @keyframes floatUp {
+      to { transform: translateY(-200px) scale(1.5); opacity: 0; }
+    }
+
+    /* slide 5 countdown layout */
+    #slide-5 { background: #000; }
+  </style>
+</head>
+<body>
+
+<div class="phone-frame">
+  <div class="story">
+
+    <!-- ═══ TAP ZONES ═══ -->
+    <div class="tap-left"  onclick="prevSlide()"></div>
+    <div class="tap-right" onclick="nextSlide()"></div>
+
+    <!-- ═══ PROGRESS BARS ═══ -->
+    <div class="progress-bars" id="progress-bars"></div>
+
+    <!-- ═══ IG TOP BAR ═══ -->
+    <div class="ig-top">
+      <div class="avatar">
+        <img src="images/bac77c1b-1000126454.jpg" alt="avatar" />
+      </div>
+      <div>
+        <div class="ig-name">ben_blindbox</div>
+        <div class="ig-time">剛剛</div>
+      </div>
+      <div style="flex:1"></div>
+      <div class="ig-close">✕</div>
+    </div>
+
+    <!-- ═══ MUSIC PILL ═══ -->
+    <div class="music-pill">
+      <span class="note">♪</span>
+      <span>Squidward Theme · vaporwave remix</span>
+    </div>
+
+    <!-- ═══════════════════════════ -->
+    <!-- SLIDE 0 — 標題卡            -->
+    <!-- ═══════════════════════════ -->
+    <div class="slide active" id="slide-0">
+      <div class="sparkle-bg" id="sparkle-bg"></div>
+      <div class="title-card">
+        <div style="font-size:70px; animation: float 2s ease-in-out infinite;">🎁</div>
+        <div class="title-main">抽盲盒<br>開箱！</div>
+        <div class="title-badge">IN SPACE × Squidward</div>
+        <div class="title-sub">章魚哥的一天 🐙</div>
+        <div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap; justify-content:center;">
+          <span style="background:rgba(255,255,255,0.12);backdrop-filter:blur(8px);color:#fff;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600;">#盲盒</span>
+          <span style="background:rgba(255,255,255,0.12);backdrop-filter:blur(8px);color:#fff;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600;">#章魚哥</span>
+          <span style="background:rgba(255,255,255,0.12);backdrop-filter:blur(8px);color:#fff;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600;">#SpongeBob</span>
+          <span style="background:rgba(255,255,255,0.12);backdrop-filter:blur(8px);color:#fff;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600;">#blindbox</span>
+        </div>
+      </div>
+      <div class="ig-bottom">
+        <div class="reply-box">傳送訊息…</div>
+        <div class="heart-btn" onclick="showHeart(event)">🤍</div>
+        <div class="share-btn">➦</div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════ -->
+    <!-- SLIDE 1 — 在店裡選盒子      -->
+    <!-- ═══════════════════════════ -->
+    <div class="slide" id="slide-1">
+      <img class="slide-bg" src="images/985812c5-1000126448.jpg" alt="" />
+      <div class="overlay"></div>
+
+      <div class="sticker sticker-text neon" style="top:130px; left:20px; transform:rotate(-5deg); animation-delay:0.2s;">
+        逛街發現！👀
+      </div>
+      <div class="sticker sticker-text yellow" style="top:190px; right:18px; transform:rotate(4deg); animation-delay:0.4s;">
+        IN SPACE<br>Squidward
+      </div>
+      <div class="sticker sticker-emoji" style="bottom:200px; right:24px; animation-delay:0.6s;">🛍️</div>
+
+      <div class="sticker sticker-text dark" style="bottom:140px; left:16px; animation-delay:0.5s;">
+        🐙 章魚哥的一天系列
+      </div>
+
+      <div class="ig-bottom">
+        <div class="reply-box">傳送訊息…</div>
+        <div class="heart-btn" onclick="showHeart(event)">🤍</div>
+        <div class="share-btn">➦</div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════ -->
+    <!-- SLIDE 2 — 神秘盲盒（遮臉）  -->
+    <!-- ═══════════════════════════ -->
+    <div class="slide" id="slide-2">
+      <img class="slide-bg" src="images/6349a468-1000126447.jpg" alt="" />
+      <div class="overlay"></div>
+
+      <div class="sticker sticker-text neon" style="top:130px; left:16px; transform:rotate(-3deg); animation-delay:0.2s;">
+        🎴 這是什麼？！
+      </div>
+      <div class="sticker sticker-emoji" style="top:210px; right:20px; animation-delay:0.4s; font-size:56px;">🤔</div>
+
+      <div class="sticker sticker-text" style="bottom:200px; left:50%; transform:translateX(-50%) rotate(2deg); animation-delay:0.5s; font-size:15px;">
+        抽到什麼不知道...
+      </div>
+      <div class="sticker sticker-tag" style="bottom:160px; left:18px; animation-delay:0.7s;">
+        #盲盒好刺激
+      </div>
+      <div class="sticker sticker-tag" style="bottom:160px; right:18px; animation-delay:0.7s;">
+        #開箱時刻
+      </div>
+
+      <div class="ig-bottom">
+        <div class="reply-box">傳送訊息…</div>
+        <div class="heart-btn" onclick="showHeart(event)">🤍</div>
+        <div class="share-btn">➦</div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════ -->
+    <!-- SLIDE 3 — 準備開盒！        -->
+    <!-- ═══════════════════════════ -->
+    <div class="slide" id="slide-3">
+      <img class="slide-bg" src="images/fe4ccefe-1000126445.jpg" alt="" />
+      <div class="overlay"></div>
+
+      <div class="sticker sticker-text yellow" style="top:130px; left:50%; transform:translateX(-50%) rotate(-2deg); animation-delay:0.2s; font-size:20px; white-space:nowrap;">
+        準備開盒！🫣
+      </div>
+
+      <div class="sticker sticker-emoji" style="top:220px; left:20px; animation-delay:0.4s;">😱</div>
+      <div class="sticker sticker-emoji" style="top:220px; right:20px; animation-delay:0.5s; font-size:40px;">✨</div>
+
+      <div style="position:absolute; bottom:180px; left:0; right:0; text-align:center; z-index:15;">
+        <div class="sticker sticker-text neon" style="position:relative; display:inline-block; font-size:16px; animation-delay:0.6s;">
+          到底是哪隻角色呢？👇
+        </div>
+      </div>
+
+      <div class="ig-bottom">
+        <div class="reply-box">傳送訊息…</div>
+        <div class="heart-btn" onclick="showHeart(event)">🤍</div>
+        <div class="share-btn">➦</div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════ -->
+    <!-- SLIDE 4 — 倒數！            -->
+    <!-- ═══════════════════════════ -->
+    <div class="slide" id="slide-4">
+      <div style="position:absolute;inset:0;background:radial-gradient(circle at 50% 50%, #2a0050, #0d001a);"></div>
+      <div class="confetti-wrap" id="confetti-pre"></div>
+      <div class="center-flex">
+        <div style="font-size:22px; color:rgba(255,255,255,0.7); font-weight:600; letter-spacing:0.2em;">開盒倒數</div>
+        <div class="countdown-num" id="count-num">3</div>
+        <div style="display:flex; gap:12px;">
+          <span style="font-size:30px; animation:float 1s ease-in-out infinite;">✨</span>
+          <span style="font-size:30px; animation:float 1.3s ease-in-out infinite;">🎊</span>
+          <span style="font-size:30px; animation:float 0.9s ease-in-out infinite;">🎉</span>
+        </div>
+      </div>
+      <div class="ig-bottom">
+        <div class="reply-box">傳送訊息…</div>
+        <div class="heart-btn" onclick="showHeart(event)">🤍</div>
+        <div class="share-btn">➦</div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════ -->
+    <!-- SLIDE 5 — REVEAL！          -->
+    <!-- ═══════════════════════════ -->
+    <div class="slide" id="slide-5">
+      <img class="slide-bg" src="images/e65013e9-1000126451.jpg" alt="" style="object-position: center center;" />
+      <div class="overlay"></div>
+      <div class="confetti-wrap" id="confetti-reveal"></div>
+
+      <div class="center-flex" style="top:100px; bottom:auto; height:auto; gap:8px;">
+        <div class="reveal-text">🎉 REVEAL!</div>
+        <div style="color:#fff; font-size:16px; font-weight:700; text-shadow:0 2px 8px rgba(0,0,0,0.8); animation:revealPop 0.6s 0.3s both;">
+          芭蕾舞章魚哥 🩰
+        </div>
+      </div>
+
+      <div class="sticker sticker-text yellow" style="bottom:220px; left:16px; transform:rotate(-5deg); animation-delay:0.4s; font-size:14px;">
+        超稀有！！！
+      </div>
+      <div class="sticker sticker-emoji" style="bottom:230px; right:20px; animation-delay:0.3s; font-size:50px;">😍</div>
+
+      <div class="ig-bottom">
+        <div class="reply-box">傳送訊息…</div>
+        <div class="heart-btn" onclick="showHeart(event)">❤️</div>
+        <div class="share-btn">➦</div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════ -->
+    <!-- SLIDE 6 — 近照展示          -->
+    <!-- ═══════════════════════════ -->
+    <div class="slide" id="slide-6">
+      <img class="slide-bg" src="images/604eaf47-1000126452.jpg" alt="" />
+      <div class="overlay"></div>
+
+      <div class="sticker sticker-text neon" style="top:128px; left:50%; transform:translateX(-50%); animation-delay:0.2s; font-size:16px;">
+        🩰 穿芭蕾裙的章魚哥！
+      </div>
+
+      <div class="sticker sticker-text yellow" style="bottom:240px; right:16px; transform:rotate(5deg); animation-delay:0.4s; font-size:13px; line-height:1.4;">
+        他好像<br>在臭臉 😂
+      </div>
+      <div class="sticker sticker-emoji" style="bottom:250px; left:20px; font-size:48px; animation-delay:0.3s;">🐙</div>
+
+      <div style="position:absolute; bottom:155px; left:0; right:0; display:flex; justify-content:center; gap:8px; z-index:15; padding:0 16px;">
+        <span class="sticker sticker-tag" style="animation-delay:0.5s; position:relative;">#章魚哥</span>
+        <span class="sticker sticker-tag" style="animation-delay:0.6s; position:relative;">#可愛玩偶</span>
+        <span class="sticker sticker-tag" style="animation-delay:0.7s; position:relative;">#盲盒開箱</span>
+      </div>
+
+      <div class="ig-bottom">
+        <div class="reply-box">傳送訊息…</div>
+        <div class="heart-btn" onclick="showHeart(event)">❤️</div>
+        <div class="share-btn">➦</div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════ -->
+    <!-- SLIDE 7 — 本人反應 😂       -->
+    <!-- ═══════════════════════════ -->
+    <div class="slide" id="slide-7">
+      <img class="slide-bg" src="images/bac77c1b-1000126454.jpg" alt="" />
+      <div class="overlay"></div>
+
+      <div class="sticker sticker-text" style="top:128px; left:50%; transform:translateX(-50%); font-size:16px; animation-delay:0.2s; white-space:nowrap; background:#FFE234; color:#111;">
+        我的表情 🤣
+      </div>
+      <div class="sticker sticker-emoji" style="top:200px; left:16px; font-size:44px; animation-delay:0.3s;">😌</div>
+      <div class="sticker sticker-emoji" style="top:200px; right:16px; font-size:44px; animation-delay:0.4s;">✨</div>
+
+      <div class="sticker sticker-text dark" style="bottom:190px; left:50%; transform:translateX(-50%); font-size:14px; animation-delay:0.5s; white-space:nowrap;">
+        值得！！絕對值得！
+      </div>
+
+      <div class="ig-bottom">
+        <div class="reply-box">傳送訊息…</div>
+        <div class="heart-btn" onclick="showHeart(event)">❤️</div>
+        <div class="share-btn">➦</div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════ -->
+    <!-- SLIDE 8 — 自拍近景          -->
+    <!-- ═══════════════════════════ -->
+    <div class="slide" id="slide-8">
+      <img class="slide-bg" src="images/c32c595c-1000126455.jpg" alt="" />
+      <div class="overlay"></div>
+
+      <div class="sticker sticker-text neon" style="top:130px; left:50%; transform:translateX(-50%) rotate(-3deg); font-size:18px; animation-delay:0.2s; white-space:nowrap;">
+        跟章魚哥合照 🐙
+      </div>
+
+      <div class="sticker sticker-emoji" style="bottom:280px; right:18px; font-size:50px; animation-delay:0.4s;">💕</div>
+
+      <div class="sticker sticker-text blue" style="bottom:210px; left:16px; transform:rotate(-3deg); font-size:14px; animation-delay:0.5s; line-height:1.5;">
+        是我新的<br>好朋友！
+      </div>
+
+      <div class="ig-bottom">
+        <div class="reply-box">傳送訊息…</div>
+        <div class="heart-btn" onclick="showHeart(event)">❤️</div>
+        <div class="share-btn">➦</div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════ -->
+    <!-- SLIDE 9 — 麥當勞聯名時刻    -->
+    <!-- ═══════════════════════════ -->
+    <div class="slide" id="slide-9">
+      <img class="slide-bg" src="images/73ef12a9-1000126456.jpg" alt="" />
+      <div class="overlay"></div>
+
+      <div class="sticker sticker-text yellow" style="top:128px; left:50%; transform:translateX(-50%) rotate(2deg); font-size:17px; animation-delay:0.2s;">
+        🍟 麥當勞時間！
+      </div>
+      <div class="sticker sticker-emoji" style="bottom:260px; left:16px; font-size:48px; animation-delay:0.3s;">🍔</div>
+
+      <div class="sticker sticker-text dark" style="bottom:190px; right:14px; transform:rotate(-4deg); font-size:13px; animation-delay:0.4s; line-height:1.5;">
+        章魚哥也要<br>來一份嗎？😂
+      </div>
+
+      <div style="position:absolute; bottom:155px; left:50%; transform:translateX(-50%); z-index:15; display:flex; gap:8px;">
+        <span class="sticker sticker-tag" style="position:relative; animation-delay:0.5s;">#麥當勞</span>
+        <span class="sticker sticker-tag" style="position:relative; animation-delay:0.6s;">#吃飯配玩偶</span>
+      </div>
+
+      <div class="ig-bottom">
+        <div class="reply-box">傳送訊息…</div>
+        <div class="heart-btn" onclick="showHeart(event)">❤️</div>
+        <div class="share-btn">➦</div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════ -->
+    <!-- SLIDE 10 — 結尾卡           -->
+    <!-- ═══════════════════════════ -->
+    <div class="slide" id="slide-10">
+      <img class="slide-bg" src="images/019dedca-1000126457.jpg" alt="" />
+      <div style="position:absolute;inset:0;background:rgba(0,0,0,0.55);"></div>
+
+      <div class="confetti-wrap" id="confetti-end"></div>
+
+      <div class="center-flex" style="gap:20px;">
+        <div style="font-size:60px; animation: float 2s ease-in-out infinite;">🐙</div>
+        <div style="font-size:28px; font-weight:900; color:#fff; text-align:center; line-height:1.3; text-shadow:0 0 20px rgba(255,100,200,0.6);">
+          章魚哥的一天<br>圓滿結束！
+        </div>
+        <div style="background:linear-gradient(135deg,#ff6fd8,#ff4b8b); color:#fff; padding:10px 28px; border-radius:30px; font-size:16px; font-weight:700;">
+          ✨ 你也去抽一個吧！
+        </div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:center;">
+          <span style="background:rgba(255,255,255,0.15);backdrop-filter:blur(8px);color:#fff;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600;">#IN_SPACE</span>
+          <span style="background:rgba(255,255,255,0.15);backdrop-filter:blur(8px);color:#fff;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600;">#章魚哥的一天</span>
+          <span style="background:rgba(255,255,255,0.15);backdrop-filter:blur(8px);color:#fff;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600;">#盲盒開箱</span>
+          <span style="background:rgba(255,255,255,0.15);backdrop-filter:blur(8px);color:#fff;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600;">#blindbox</span>
+        </div>
+        <div style="font-size:13px; color:rgba(255,255,255,0.5); text-align:center;">
+          ❤️ 喜歡的話按讚分享喔！
+        </div>
+      </div>
+
+      <div class="ig-bottom">
+        <div class="reply-box">傳送訊息…</div>
+        <div class="heart-btn" onclick="showHeart(event)">❤️</div>
+        <div class="share-btn">➦</div>
+      </div>
+    </div>
+
+  </div><!-- /story -->
+</div><!-- /phone-frame -->
+
+<script>
+  const TOTAL = 11;
+  const SLIDE_DURATION = 4000; // ms per slide
+
+  let current = 0;
+  let timer   = null;
+  let barTimer = null;
+  let barStart = null;
+
+  // Build progress bars
+  const barsEl = document.getElementById('progress-bars');
+  for (let i = 0; i < TOTAL; i++) {
+    const track = document.createElement('div');
+    track.className = 'bar-track';
+    const fill = document.createElement('div');
+    fill.className = 'bar-fill';
+    fill.id = `bar-${i}`;
+    track.appendChild(fill);
+    barsEl.appendChild(track);
+  }
+
+  function goTo(idx) {
+    if (idx < 0) idx = 0;
+    if (idx >= TOTAL) idx = TOTAL - 1;
+
+    const prev = document.getElementById(`slide-${current}`);
+    const next = document.getElementById(`slide-${idx}`);
+
+    if (prev) prev.classList.remove('active');
+    if (next) next.classList.add('active');
+
+    // update bars
+    for (let i = 0; i < TOTAL; i++) {
+      const f = document.getElementById(`bar-${i}`);
+      f.classList.remove('active');
+      if (i < idx)       { f.classList.add('done');  f.style.width = '100%'; f.style.transition = 'none'; }
+      else if (i === idx){ f.classList.remove('done'); f.style.width = '0%'; f.style.transition = 'none'; }
+      else               { f.classList.remove('done'); f.style.width = '0%'; f.style.transition = 'none'; }
+    }
+
+    current = idx;
+    clearTimeout(timer);
+    cancelAnimationFrame(barTimer);
+    startBar();
+    runSlideEffects(idx);
+  }
+
+  function startBar() {
+    const fill = document.getElementById(`bar-${current}`);
+    barStart = performance.now();
+    function step(now) {
+      const elapsed = now - barStart;
+      const pct = Math.min(elapsed / SLIDE_DURATION * 100, 100);
+      fill.style.transition = 'none';
+      fill.style.width = pct + '%';
+      if (pct < 100) {
+        barTimer = requestAnimationFrame(step);
+      } else {
+        nextSlide();
+      }
+    }
+    barTimer = requestAnimationFrame(step);
+  }
+
+  function nextSlide() {
+    if (current < TOTAL - 1) goTo(current + 1);
+    else {
+      // restart
+      goTo(0);
+    }
+  }
+  function prevSlide() {
+    if (current > 0) goTo(current - 1);
+  }
+
+  // Slide-specific effects
+  function runSlideEffects(idx) {
+    if (idx === 0) generateSparkles();
+    if (idx === 4) runCountdown();
+    if (idx === 5) spawnConfetti('confetti-reveal', 80);
+    if (idx === 10) spawnConfetti('confetti-end', 60);
+  }
+
+  // Sparkle background for title
+  function generateSparkles() {
+    const bg = document.getElementById('sparkle-bg');
+    bg.innerHTML = '';
+    for (let i = 0; i < 60; i++) {
+      const s = document.createElement('div');
+      s.className = 'sparkle';
+      s.style.left   = Math.random() * 100 + '%';
+      s.style.top    = Math.random() * 100 + '%';
+      s.style.animationDuration = (1 + Math.random() * 3) + 's';
+      s.style.animationDelay   = (Math.random() * 3) + 's';
+      const size = 2 + Math.random() * 4;
+      s.style.width  = size + 'px';
+      s.style.height = size + 'px';
+      bg.appendChild(s);
+    }
+  }
+
+  // Countdown on slide 4
+  function runCountdown() {
+    const el = document.getElementById('count-num');
+    let n = 3;
+    el.textContent = n;
+    el.style.animation = 'none';
+    el.offsetHeight; // reflow
+    el.style.animation = 'countPop 0.5s cubic-bezier(0.34,1.56,0.64,1) both';
+
+    const interval = setInterval(() => {
+      n--;
+      if (n <= 0) {
+        clearInterval(interval);
+        el.textContent = '開！';
+        el.style.color = '#ff6fd8';
+        return;
+      }
+      el.style.animation = 'none';
+      el.offsetHeight;
+      el.style.animation = 'countPop 0.5s cubic-bezier(0.34,1.56,0.64,1) both';
+      el.textContent = n;
+    }, 900);
+  }
+
+  // Confetti
+  const CONFETTI_COLORS = ['#ff6fd8','#FFE234','#4FC3F7','#81c784','#ffb74d','#ce93d8','#ff4b8b','#fff'];
+  function spawnConfetti(containerId, count) {
+    const wrap = document.getElementById(containerId);
+    if (!wrap) return;
+    wrap.innerHTML = '';
+    for (let i = 0; i < count; i++) {
+      const p = document.createElement('div');
+      p.className = 'confetti-piece';
+      p.style.left   = Math.random() * 100 + '%';
+      p.style.background = CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)];
+      p.style.width  = (6 + Math.random() * 8) + 'px';
+      p.style.height = (8 + Math.random() * 12) + 'px';
+      p.style.animationDuration = (1.5 + Math.random() * 2) + 's';
+      p.style.animationDelay   = (Math.random() * 1.5) + 's';
+      p.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+      wrap.appendChild(p);
+    }
+  }
+
+  // Floating heart on tap
+  function showHeart(e) {
+    const story = e.currentTarget.closest('.story') || document.querySelector('.story');
+    const rect = story.getBoundingClientRect();
+    const h = document.createElement('div');
+    h.className = 'heart-float';
+    h.textContent = '❤️';
+    h.style.left = (e.clientX - rect.left - 20) + 'px';
+    h.style.top  = (e.clientY - rect.top  - 20) + 'px';
+    story.appendChild(h);
+    setTimeout(() => h.remove(), 1000);
+  }
+
+  // Keyboard navigation
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === ' ') nextSlide();
+    if (e.key === 'ArrowLeft')  prevSlide();
+  });
+
+  // Start
+  goTo(0);
+</script>
+</body>
+</html>
