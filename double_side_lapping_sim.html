@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>雙面研磨軌跡模擬</title>
+<style>
+  :root { --bg:#f4f6f8; --card:#fff; --fg:#1b2733; --sub:#5b6b7b; --line:#d5dde5;
+          --accent:#1f6feb; --good:#1a8a4a; --mid:#c27a00; --bad:#c62828; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#12171d; --card:#1c242d; --fg:#e8eef4; --sub:#9fb0c1; --line:#33414f;
+            --accent:#5aa2ff; --good:#4cc38a; --mid:#e8b04a; --bad:#ff7a7a; }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font-size:16px; line-height:1.55;
+         font-family:-apple-system,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif; }
+  main { max-width:720px; margin:0 auto; padding:16px; }
+  h1 { font-size:22px; margin:4px 0 4px; }
+  h2 { font-size:18px; margin:0 0 10px; }
+  p.lead { color:var(--sub); margin:0 0 14px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px; margin-bottom:14px; }
+  canvas { display:block; width:100%; height:auto; background:var(--card); border-radius:8px; touch-action:none; }
+  .row { display:flex; align-items:center; gap:10px; margin:10px 0; }
+  .row label { flex:0 0 7.2em; font-weight:600; }
+  .row input[type=range] { flex:1; min-width:0; height:36px; accent-color:var(--accent); }
+  .row output { flex:0 0 5.2em; text-align:right; font-variant-numeric:tabular-nums; font-weight:600; }
+  .btns { display:flex; flex-wrap:wrap; gap:10px; }
+  button { font-size:16px; min-height:48px; padding:10px 16px; border-radius:10px; cursor:pointer;
+           border:1px solid var(--line); background:var(--card); color:var(--fg); flex:1 1 auto; }
+  button.primary { background:var(--accent); color:#fff; border-color:var(--accent); }
+  button.active { outline:3px solid var(--accent); }
+  .metric { display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; }
+  .big { font-size:30px; font-weight:700; font-variant-numeric:tabular-nums; }
+  .verdict { font-size:20px; font-weight:700; }
+  .good { color:var(--good); } .mid { color:var(--mid); } .bad { color:var(--bad); }
+  .small { font-size:16px; color:var(--sub); }
+  select { font-size:16px; min-height:44px; padding:6px 10px; border-radius:10px; border:1px solid var(--line);
+           background:var(--card); color:var(--fg); }
+  details summary { cursor:pointer; min-height:36px; font-weight:600; }
+</style>
+</head>
+<body>
+<main>
+  <h1>雙面研磨軌跡模擬</h1>
+  <p class="lead">上下盤＋太陽輪＋內齒輪＋載具：看工件上一個點，在研磨盤上走出的軌跡均不均勻。</p>
+
+  <div class="card">
+    <canvas id="cv" width="720" height="720" aria-label="軌跡圖"></canvas>
+    <div class="row" style="margin-top:12px">
+      <label for="view">觀察面</label>
+      <select id="view">
+        <option value="lower">下盤（相對下盤）</option>
+        <option value="upper">上盤（相對上盤）</option>
+      </select>
+    </div>
+    <div class="small" id="status">模擬時間：0 秒</div>
+  </div>
+
+  <div class="card">
+    <h2>轉速設定（rpm，負值＝反向）</h2>
+    <div class="row"><label for="wu">上盤轉速</label><input type="range" id="wu" min="-100" max="100" step="1" value="0"><output id="wu_o"></output></div>
+    <div class="row"><label for="wl">下盤轉速</label><input type="range" id="wl" min="-100" max="100" step="1" value="0"><output id="wl_o"></output></div>
+    <div class="row"><label for="ws">太陽輪轉速</label><input type="range" id="ws" min="-100" max="100" step="1" value="0"><output id="ws_o"></output></div>
+    <div class="row"><label for="wr">內齒輪轉速</label><input type="range" id="wr" min="-100" max="100" step="1" value="0"><output id="wr_o"></output></div>
+    <div class="small">正負號以同一方向（由上往下看逆時針為正）為基準。拖動滑桿會自動清除並重畫。</div>
+  </div>
+
+  <div class="card">
+    <h2>範例組合</h2>
+    <div class="btns" id="presets"></div>
+    <p class="small" id="presetNote" style="margin-bottom:0"></p>
+  </div>
+
+  <div class="card">
+    <h2>軌跡均勻度</h2>
+    <div class="metric">
+      <span class="big" id="cv_val">—</span>
+      <span class="verdict" id="cv_txt">計算中</span>
+    </div>
+    <div class="small" id="cv_detail"></div>
+    <canvas id="bars" width="720" height="260" style="margin-top:10px" aria-label="各環密度長條圖"></canvas>
+    <div class="small">長條＝各同心圓環單位面積的研磨行程密度；越平越均勻。</div>
+    <div class="btns" style="margin-top:12px">
+      <button id="pause">暫停</button>
+      <button id="clear" class="primary">清除重畫</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <details>
+      <summary>計算方式說明</summary>
+      <p>幾何（單位 mm）：太陽輪半徑 60、內齒輪半徑 180、行星輪（載具）半徑 60，載具中心軌道半徑 120。追蹤點位於載具中心外 45 mm 處。</p>
+      <p>載具公轉 Ωc＝(Rs·Ωs＋Rr·Ωr)／(Rs＋Rr)，載具自轉 ωp＝(C·Ωc－Rs·Ωs)／rp。點的絕對位置再扣掉研磨盤轉角，即得相對該盤的軌跡。</p>
+      <p>均勻度：把半徑 84～156 mm（追蹤點掃過範圍的中段 80%）切成 18 個同心環，累計軌跡在各環的行程長度（相對滑動距離，與去除量成正比），除以環面積得密度，取變異係數 CV＝標準差／平均。判定：CV&lt;0.25 且網格覆蓋率≥90% 為均勻；CV≥0.32 或覆蓋率&lt;50% 為不均勻；其餘為普通（單看環帶 CV 抓不到「軌跡重疊成花瓣」，因此加入覆蓋率輔助）。另顯示環×扇區（18×48）網格覆蓋率。</p>
+      <p>備註：看「下盤」時，上盤轉速不影響下盤軌跡，需切到「上盤」觀察面才會看到上盤轉速的作用。</p>
+    </details>
+  </div>
+</main>
+
+<script>
+(function () {
+  'use strict';
+  // ---- 幾何與常數 ----
+  var RS = 60, RR = 180, RP = (RR - RS) / 2, C = (RS + RR) / 2, D = 45;
+  var R_IN = 84, R_OUT = 156, NR = 18, NS = 48, PLATE_R = 195;
+  var DT = 0.001, STEPS = 1000, T_MAX = 600;
+  var TH1 = 0.25, TH2 = 0.32, COV_OK = 0.9, COV_BAD = 0.5;
+  var RPM = 2 * Math.PI / 60;
+
+  var PRESETS = [
+    { name: '均勻', u: -30, l: 40, s: 17, r: -9,
+      note: '轉速比不成簡單整數比，軌跡逐漸交錯填滿整個盤面。' },
+    { name: '花瓣重疊', u: -30, l: 20, s: 30, r: 0,
+      note: '轉速比為簡單整數比，軌跡回到原路，重疊成花瓣狀，其餘區域沒磨到。' },
+    { name: '太單調', u: -20, l: 0, s: 20, r: 0,
+      note: '只有太陽輪在轉、下盤不動，軌跡只在固定幾條路徑上來回，大部分盤面磨不到。' }
+  ];
+
+  var $ = function (id) { return document.getElementById(id); };
+  var cv = $('cv'), ctx = cv.getContext('2d');
+  var bars = $('bars'), bctx = bars.getContext('2d');
+  var ids = ['wu', 'wl', 'ws', 'wr'];
+
+  function params() {
+    return { wu: +$('wu').value * RPM, wl: +$('wl').value * RPM,
+             ws: +$('ws').value * RPM, wr: +$('wr').value * RPM };
+  }
+
+  // ---- 模擬狀態 ----
+  var st;
+  var paused = false;
+  function ringArea(i) {
+    var dr = (R_OUT - R_IN) / NR, r0 = R_IN + i * dr, r1 = r0 + dr;
+    return Math.PI * (r1 * r1 - r0 * r0);
+  }
+  var areas = []; for (var a = 0; a < NR; a++) areas.push(ringArea(a));
+
+  function reset() {
+    var p = params();
+    var view = $('view').value;
+    var oc = (RS * p.ws + RR * p.wr) / (RS + RR);          // 載具公轉
+    var op = (C * oc - RS * p.ws) / RP;                    // 載具自轉
+    st = { p: p, wp: view === 'upper' ? p.wu : p.wl, oc: oc, op: op,
+           t: 0, len: new Float64Array(NR), cells: new Uint8Array(NR * NS), hit: 0,
+           px: null, py: null };
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    drawBase();
+    render();
+  }
+
+  function pointAt(t) {
+    var ac = st.oc * t, ap = st.op * t, ar = st.wp * t;
+    var x = C * Math.cos(ac) + D * Math.cos(ap);
+    var y = C * Math.sin(ac) + D * Math.sin(ap);
+    var cs = Math.cos(-ar), sn = Math.sin(-ar);
+    return [x * cs - y * sn, x * sn + y * cs];
+  }
+
+  var SC = cv.width / 2 / (PLATE_R + 5);
+  function drawBase() {
+    var w = cv.width, c = w / 2;
+    var cs = getComputedStyle(document.body);
+    var line = cs.getPropertyValue('--line').trim();
+    ctx.save();
+    ctx.strokeStyle = line; ctx.lineWidth = 2;
+    [PLATE_R, R_IN, R_OUT].forEach(function (r, i) {
+      ctx.setLineDash(i === 0 ? [] : [6, 6]);
+      ctx.beginPath(); ctx.arc(c, c, r * SC, 0, 6.2832); ctx.stroke();
+    });
+    ctx.restore();
+  }
+
+  function step() {
+    var dr = (R_OUT - R_IN) / NR, dth = 2 * Math.PI / NS;
+    var c = cv.width / 2;
+    var dark = window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches;
+    ctx.strokeStyle = dark ? 'rgba(90,162,255,0.55)' : 'rgba(31,111,235,0.45)';
+    ctx.lineWidth = 1.2; ctx.lineJoin = 'round';
+    ctx.beginPath();
+    var px = st.px, py = st.py;
+    if (px === null) { var q = pointAt(st.t); px = q[0]; py = q[1]; }
+    ctx.moveTo(c + px * SC, c - py * SC);
+    for (var i = 0; i < STEPS; i++) {
+      st.t += DT;
+      var n = pointAt(st.t), x = n[0], y = n[1];
+      var seg = Math.hypot(x - px, y - py);
+      var r = Math.hypot(x, y), bi = Math.floor((r - R_IN) / dr);
+      if (bi >= 0 && bi < NR) {
+        st.len[bi] += seg;
+        var th = Math.atan2(y, x); if (th < 0) th += 2 * Math.PI;
+        var si = Math.min(NS - 1, Math.floor(th / dth)), k = bi * NS + si;
+        if (!st.cells[k]) { st.cells[k] = 1; st.hit++; }
+      }
+      ctx.lineTo(c + x * SC, c - y * SC);
+      px = x; py = y;
+    }
+    ctx.stroke();
+    st.px = px; st.py = py;
+  }
+
+  function metrics() {
+    var d = [], sum = 0, i;
+    for (i = 0; i < NR; i++) { d.push(st.len[i] / areas[i]); sum += d[i]; }
+    var mean = sum / NR, v = 0;
+    for (i = 0; i < NR; i++) v += (d[i] - mean) * (d[i] - mean);
+    var sd = Math.sqrt(v / NR);
+    return { d: d, mean: mean, cv: mean > 0 ? sd / mean : NaN,
+             cover: st.hit / (NR * NS) };
+  }
+
+  function render() {
+    for (var i = 0; i < ids.length; i++) $(ids[i] + '_o').textContent = $(ids[i]).value + ' rpm';
+    $('status').textContent = '模擬時間：' + st.t.toFixed(0) + ' 秒' + (st.t >= T_MAX ? '（已達上限）' : '') +
+      '　載具公轉 ' + (st.oc / RPM).toFixed(1) + ' rpm、自轉 ' + (st.op / RPM).toFixed(1) + ' rpm';
+    var m = metrics();
+    if (!isFinite(m.cv) || st.t < 5) {
+      $('cv_val').textContent = '—'; $('cv_txt').textContent = st.t < 5 ? '計算中' : '無軌跡';
+      $('cv_txt').className = 'verdict';
+    } else {
+      var lvl = (m.cv >= TH2 || m.cover < COV_BAD) ? 2 : (m.cv < TH1 && m.cover >= COV_OK) ? 0 : 1;
+      var cls = ['good', 'mid', 'bad'][lvl], txt = ['均勻', '普通', '不均勻'][lvl];
+      $('cv_val').textContent = 'CV ' + m.cv.toFixed(2);
+      $('cv_txt').textContent = txt; $('cv_txt').className = 'verdict ' + cls;
+    }
+    $('cv_detail').textContent = '網格覆蓋率 ' + (m.cover * 100).toFixed(0) + '%（越高代表盤面被掃過的越多）';
+    drawBars(m);
+  }
+
+  function drawBars(m) {
+    var w = bars.width, h = bars.height, mx = Math.max.apply(null, m.d.concat([1e-9]));
+    var cs = getComputedStyle(document.body);
+    bctx.clearRect(0, 0, w, h);
+    bctx.fillStyle = cs.getPropertyValue('--accent').trim();
+    var bw = w / NR;
+    for (var i = 0; i < NR; i++) {
+      var bh = (m.d[i] / mx) * (h - 24);
+      bctx.fillRect(i * bw + 2, h - 20 - bh, bw - 4, bh);
+    }
+    bctx.fillStyle = cs.getPropertyValue('--sub').trim();
+    bctx.font = '20px sans-serif';
+    bctx.fillText('內 ' + R_IN + ' mm', 2, h - 2);
+    var t = '外 ' + R_OUT + ' mm'; bctx.fillText(t, w - bctx.measureText(t).width - 2, h - 2);
+    if (m.mean > 0) {
+      var y = h - 20 - (m.mean / mx) * (h - 24);
+      bctx.strokeStyle = cs.getPropertyValue('--sub').trim(); bctx.setLineDash([6, 4]);
+      bctx.beginPath(); bctx.moveTo(0, y); bctx.lineTo(w, y); bctx.stroke(); bctx.setLineDash([]);
+    }
+  }
+
+  function frame() {
+    if (!paused && st.t < T_MAX) { step(); render(); }
+    requestAnimationFrame(frame);
+  }
+
+  // ---- UI ----
+  ids.forEach(function (id) {
+    $(id).addEventListener('input', function () { clearPresetMark(); reset(); });
+  });
+  $('view').addEventListener('change', reset);
+  $('clear').addEventListener('click', function () { paused = false; $('pause').textContent = '暫停'; reset(); });
+  $('pause').addEventListener('click', function () {
+    paused = !paused; this.textContent = paused ? '繼續' : '暫停';
+  });
+  function clearPresetMark() {
+    var bs = $('presets').children;
+    for (var i = 0; i < bs.length; i++) bs[i].classList.remove('active');
+    $('presetNote').textContent = '';
+  }
+  PRESETS.forEach(function (p, i) {
+    var b = document.createElement('button');
+    b.textContent = p.name; b.type = 'button';
+    b.addEventListener('click', function () {
+      $('wu').value = p.u; $('wl').value = p.l; $('ws').value = p.s; $('wr').value = p.r;
+      clearPresetMark(); b.classList.add('active');
+      $('presetNote').textContent = '上盤 ' + p.u + '、下盤 ' + p.l + '、太陽輪 ' + p.s + '、內齒輪 ' + p.r + ' rpm。' + p.note;
+      paused = false; $('pause').textContent = '暫停';
+      reset();
+    });
+    $('presets').appendChild(b);
+  });
+
+  // 測試用掛鉤
+  window.__sim = { reset: reset, step: step, metrics: function () { return metrics(); },
+                   state: function () { return st; }, presets: PRESETS };
+
+  PRESETS[0] && document.getElementById('presets').children[0].click();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
