@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>電動升降台車與爬坡搬運車比較</title>
+<style>
+  :root{--bg:#f4f6f8;--card:#fff;--fg:#1b2733;--sub:#556575;--line:#d5dde5;--accent:#1f6feb;--ok:#1a7f45;--warn:#a86400;--bad:#c62828;--chip:#eef2f6}
+  @media (prefers-color-scheme:dark){:root{--bg:#12171d;--card:#1c242d;--fg:#e8eef4;--sub:#a3b3c3;--line:#33414f;--accent:#5aa2ff;--ok:#4cc38a;--warn:#e8b04a;--bad:#ff7a7a;--chip:#26313c}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);font-size:16px;line-height:1.65;font-family:-apple-system,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif}
+  main{max-width:900px;margin:0 auto;padding:16px}
+  h1{font-size:22px;margin:4px 0 6px} h2{font-size:19px;margin:0 0 10px} h3{font-size:17px;margin:14px 0 6px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:14px}
+  .sub{color:var(--sub)} a{color:var(--accent);word-break:break-all}
+  .top3 li{margin-bottom:10px} .tag{display:inline-block;padding:1px 8px;border-radius:8px;background:var(--chip);font-size:16px;margin:2px 4px 2px 0}
+  .ok{color:var(--ok);font-weight:700}.warn{color:var(--warn);font-weight:700}.bad{color:var(--bad);font-weight:700}
+  .wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:8px}
+  table{border-collapse:collapse;min-width:1100px;width:100%}
+  th,td{border-bottom:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top;font-size:16px}
+  th{background:var(--chip);position:sticky;top:0} td:first-child,th:first-child{position:sticky;left:0;background:var(--card);min-width:150px;font-weight:600}
+  th:first-child{background:var(--chip)}
+  .q li{margin-bottom:10px} .src li{margin-bottom:8px}
+  .note{border-left:4px solid var(--warn);padding:6px 12px;background:var(--chip);border-radius:6px;margin:10px 0}
+</style>
+</head>
+<body>
+<main>
+<h1>電動升降台車／爬坡搬運車　市場整理</h1>
+<p class="sub">情境：廠區門口斜坡約 12%（1.86 m 長爬升 22.5 cm，約 1:8.3，角度約 6.9°；另一側爬升約 20 cm，長度未提供），搬運 20 L 桶裝液體與袋裝粉料，載重 100～300 kg（500 kg 級供參考）。整理日期 2026-10-15。</p>
+
+<div class="card">
+<h2>結論先行</h2>
+<div class="note"><b>最重要的事：</b>我查到的公開資料裡，<b>沒有任何一款能同時確認「300 kg 滿載、12% 坡」可行</b>。日光、力牛、恆智三家的升降台車型號都查無爬坡數字；有爬坡數字的車款（拖板車、堆高機），標示的<b>滿載爬坡只有 6～9%，低於 12%</b>，空載才 14～18%。所以下面三個推薦是「值得優先詢價並要求現場試爬」，不是「已確認能爬」。</div>
+<ol class="top3">
+<li><b>力牛高強 DS-18L 自走式全電動拖板車（額定 1.5 噸）</b><br>理由：三家裡唯一在官網標示了爬坡數字（空載 6~15%），且你的 100～300 kg 只占額定載重的 7～20%，推測爬坡餘裕比滿載標示好。要把桶、袋放在棧板上搬，缺點是沒有升降台。<span class="tag">爬坡：空載標示，滿載未確認</span></li>
+<li><b>日光 SUNLIGHT FELT-300 全電動升降自走台車（300 kg）</b><br>理由：載重剛好吻合、本身就是升降台車、快換電池、你已經在詢價。但官網摘要查無爬坡數字，必須書面確認 300 kg 時能否爬 12%。<span class="tag">爬坡：查無公開資料</span></li>
+<li><b>恆智 NOVELTEK 電動升降平台 ELT-02～50（200～5000 kg，可客製）</b><br>理由：台灣製造、官網說明載重與尺寸可客製，可以直接把「12% 坡、300 kg」寫進規格要求，並可要求 500 kg 版報價。缺點是爬坡能力查無，且客製價格不透明。若恆智可以不客製，備案是 PPT / PPS 系列，但滿載只標 9%，要確認 300 kg 時的實測。<span class="tag">爬坡：查無公開資料</span></li>
+</ol>
+<p class="sub">排序依據：有無公開的爬坡數字、額定載重與你的需求是否貼近、是否台灣廠商可就近維修。排序本身是我的判斷（推測）。</p>
+</div>
+
+<div class="card">
+<h2>你的坡度換算與所需推力（推算）</h2>
+<ul>
+<li>22.5 ÷ 186 ≈ 12.1%，角度 ≈ 6.9°。20 cm 那側若長度同為 1.86 m，約 10.8%；長度不同則不同，請量實際長度。</li>
+<li>角度與百分比不要混用：7° ≈ 12.3%，20° ≈ 36%，25° ≈ 47%。</li>
+<li>粗估：車重＋貨 400 kg 時，坡度分量約 470 N，加上滾動阻力（取 2%）約 80 N，合計約 550 N（約 56 kgf）。此為我自己的推算，未計算起步加速與輪胎打滑，僅供感受量級。</li>
+<li>坡道頂端的「平地→斜坡」轉折處，車底盤或貨叉可能刮地，詢價時請同時問離地間隙。</li>
+</ul>
+</div>
+
+<div class="card">
+<h2>比較表</h2>
+<p class="sub">表格可左右滑動。「12% 達標」只看公開標示：<span class="ok">達標</span>／<span class="bad">不達標</span>／<span class="warn">部分或矛盾</span>／查無。「查無公開資料」代表我沒找到，不是不存在。查證強度 A／B／C 的定義見最下方。</p>
+<div class="wrap"><table id="tbl"></table></div>
+</div>
+
+<div class="card">
+<h2>日光、力牛、恆智　已找到的資料</h2>
+<h3>日光國際企業（SUNLIGHT，sunlight99.com.tw）</h3>
+<ul>
+<li>FELT-300 全電動升降自走台車：載重 300 kg；8 吋驅動輪；續航 6～8 公里；快換電池重 2.5 kg；平台與升降高度可客製；放手即煞車、內建過溫過載保護；可切空檔無電力推拉；升降採電動缸。<b>爬坡、價格：查無公開資料。</b>另有不鏽鋼 SUS304 版 FELT-300_SUS。</li>
+<li>ETSM-250 電動搬運車：載重 250 kg；平台 95×63 cm（第三方寫 90×63）；車重 28 kg；折疊式。第三方通路 sciket 標含稅 NT$30,189、期貨 16～30 天；同系列區間 NT$26,040～49,875。<b>爬坡：查無公開資料。</b>它是低平台推車，沒有升降。</li>
+<li>官網另列自走堆高機、無塵室升降台車、牽引車等；本次未取得這些型號的爬坡資料。</li>
+</ul>
+<h3>力牛：請先確認是哪一家</h3>
+<ul>
+<li><b>力牛高強油壓拖板車有限公司（lilew.com.tw）</b>：電動拖板車、電動升降台車、堆高機。表內「力牛」型號都是這家。</li>
+<li><b>力牛機械股份有限公司（liniu.com.tw）</b>是另一家公司，也賣電動升降台車（300 kg 級單叉、12V 65Ah 電池），我只在搜尋摘要看到，爬坡與價格查無。你詢價的是哪一家，請自行確認。</li>
+</ul>
+<h3>恆智重機（NOVELTEK，liftruck.com.tw，苗栗）</h3>
+<ul>
+<li>電動拖板車 PPT-20/25/30/40：官網摘要表列空載 14～15%／18% 的數值（摘要沒有顯示欄位名稱，我無法確定各數字的對應），文字說明滿載約 9%。</li>
+<li>電動堆高機 PPS-09/10/15/20：空載 16%、全負荷 9%。</li>
+<li>電動升降平台 ELT-02～50：200～5000 kg 可客製；<b>爬坡：查無公開資料</b>。</li>
+<li>高空作業車 KL-35（載重 200 kg）：用途為高空作業，不建議當搬運車。</li>
+</ul>
+</div>
+
+<div class="card">
+<h2>要問廠商的 10 個問題</h2>
+<ol class="q">
+<li><b>爬坡載重上限：</b>在「坡度 12%、坡長 1.86 m」的條件下，最大允許載重是多少 kg？請給書面載重—坡度對照表，並註明單位是 % 還是度。</li>
+<li><b>滿載與空載：</b>標示的爬坡能力是滿載還是空載？測試條件（路面、輪胎、電池電量）為何？</li>
+<li><b>下坡與煞車：</b>煞車是電磁煞車、手放開即煞，還是只有再生煞車？載 300 kg 下坡時最大安全速度與煞車距離？</li>
+<li><b>斜坡停車：</b>在 12% 坡上載貨停車是否會溜？是否有駐車煞車，斷電或電池耗盡時煞車是否仍有效？</li>
+<li><b>坡道轉折：</b>平地接斜坡處的離地間隙、貨叉或平台是否會刮地？可否加防刮輪？</li>
+<li><b>貨物穩定：</b>20 L 桶與袋裝粉料在坡上平台的防滑、防傾措施？重心高度（升起時）是否限制爬坡？是否建議只在最低位置過坡？</li>
+<li><b>電池與充電：</b>電池種類（鉛酸／鋰）、容量、爬坡時耗電、實際續航、充電時間，電壓 110V 或 220V，是否可備用電池快換？</li>
+<li><b>保固：</b>整機與電池各保固多久？哪些項目屬消耗品（輪胎、煞車片、電池）？</li>
+<li><b>維修在地性：</b>台灣有無服務據點？到你廠區的到場時間？常用零件是否有庫存？</li>
+<li><b>試車與價格：</b>能否到現場以實際載重在你的斜坡試爬？報價是否含稅、運費、教育訓練、操作與安全標示？500 kg 級有無對應型號與價差？</li>
+</ol>
+</div>
+
+<div class="card">
+<h2>來源與查證強度</h2>
+<p><b>先說清楚限制：</b>這次的網路查詢工具只能搜尋、不能直接開啟網站。下面「A」的資料是搜尋結果對官網頁面的摘錄轉述，<b>我沒有親眼核對原頁全文</b>，數字請以廠商原頁與書面規格為準。</p>
+<ul>
+<li><b>A＝官網內容（經搜尋摘錄）</b>：出自廠商自己的網頁。</li>
+<li><b>B＝第三方／經銷商／媒體</b>：賣場、比價、報導，數字可能與原廠不同。</li>
+<li><b>C＝推測</b>：我的判斷或推算，不是公開資料。</li>
+</ul>
+<ul class="src" id="src"></ul>
+<h3>我推測的部分（共同整理）</h3>
+<ul>
+<li>三項推薦的排序與理由。</li>
+<li>「300 kg 只占 1.5 噸車的 20%，爬坡餘裕可能比滿載標示好」：這是工程直覺，沒有廠商數據支持，必須現場試爬驗證。</li>
+<li>所需推力約 550 N 的估算（假設滾動阻力 2%）。</li>
+<li>20 cm 側坡度若長度為 1.86 m 則約 10.8%。</li>
+<li>各車款是否適合你的場景（棧板型或升降台型）的適用性判斷。</li>
+<li>表中標「查無」的欄位：不代表廠商沒有該功能或數據，只是我沒找到。</li>
+</ul>
+<p class="sub">價格多為未稅官網標價或比價網站數字，會變動，請向廠商詢價。</p>
+</div>
+</main>
+<script>
+(function(){
+  var H=['車款','類型／載重','最大爬坡（原文標示）','12% 達標？','爬坡 vs 平地載重','電池／續航','升降高度','價格','台灣代理／來源','強度'];
+  var R=[
+   ['力牛高強 DS-18L<br>(電池 170Ah 版)','電動拖板車　1500 kg','6~15%（空載）','<span class="warn">空載可；滿載查無</span>','<span class="warn">有差異：標示為空載值，滿載未列</span>','170Ah；續航查無','拖板車，貨叉最高約 200 mm 級（查無精確值）','查無公開資料','力牛高強（品牌商，台灣）','A'],
+   ['力牛高強 小猛牛 1.5T（停售）','電動拖板車　1500 kg','最大爬坡度 滿載/空載：6/16%','<span class="bad">滿載不達標</span>；空載 <span class="ok">達標</span>','<span class="bad">有差異：6% vs 16%</span>','查無','查無','停售','力牛高強','A'],
+   ['力牛高強 F7','電動拖板車　1500 kg','查無公開資料','查無','查無','鋰電池 24V 20Ah；續航查無','最高 205 mm','25,000 元（未稅）','力牛高強','A'],
+   ['力牛高強 DS-10L','自走式電動升降台車　1000 kg（500 kg 級以上參考）','查無公開資料','查無','查無','24V 60A 電瓶；驅動 750W','460～1500 mm','查無公開資料','力牛高強','A'],
+   ['恆智 PPT-20/25/30/40','電動拖板車　2.0～4.0 噸','空載 14～18%（欄位對應不明）；文字：滿載約 9%','滿載 <span class="bad">不達標</span>；空載 <span class="ok">達標</span>','<span class="bad">有差異：9% vs 14～18%</span>','查無','拖板車','查無公開資料','恆智重機（NOVELTEK，台灣製造）','A'],
+   ['恆智 PPS-09/10/15/20','電動堆高機　0.9～2.0 噸','空載 16%；全負荷 9%','滿載 <span class="bad">不達標</span>；空載 <span class="ok">達標</span>','<span class="bad">有差異：9% vs 16%</span>','查無','底叉揚升約 205 mm（摘要）','查無公開資料','恆智重機','A'],
+   ['恆智 ELT-02～50','電動油壓升降平台　200～5000 kg，可客製','查無公開資料','查無','查無','查無','依客製','查無公開資料（客製）','恆智重機','A'],
+   ['日光 FELT-300','全電動升降自走台車　300 kg','查無公開資料','查無','查無','快換電池 2.5 kg；續航 6～8 公里','可客製','查無公開資料','日光國際企業（台灣）','A'],
+   ['日光 ETSM-250','電動搬運車（折疊、低平台）　250 kg','查無公開資料','查無','查無','電池查無；同系列 ETSL-250 續航 6～10 km（來源不一）','無升降','含稅 NT$30,189（sciket；系列 26,040～49,875）','日光國際企業；科研市集（通路）','A／B'],
+   ['名輪 MLTR-9566','獨輪電動搬運車（農用）　150 kg','20° 或 25°（同頁自相矛盾）','<span class="warn">150 kg 時標示達標，但頁面自相矛盾；且載重低於你的需求</span>','標示為 150 kg 時的坡度，平地載重未列','44.4V 8.8Ah（同頁另寫 50.4V 8Ah）','無','查無公開資料','晟豐農業機械等通路（台灣）','B'],
+   ['Hillver HMC-300P2','電動爬樓梯搬運車　300 kg（貨 200＋操作者 100）','最大坡度 7°（≈12.3%）','<span class="warn">邊緣達標（12.3%）；為樓梯機</span>','載重已含操作者，貨只有 200 kg','查無','無','查無公開資料','印尼經銷頁；台灣代理查無','B'],
+   ['Jaroc 電動輔助台車','電動輔助推車　輔助 300／500 kg','查無（官方放在 PDF 規格表，未取得）','查無','查無','查無','無','查無公開資料','日本；官方頁註明僅提供日本國內','B'],
+   ['MasterMover SmartMover SM100+/SM200+','電動牽引車（拖載輪式載具）　1200／2000 kg','查無（30° 為另一型號 LM100 的數字）','查無','查無','可換電池','無','查無公開資料','英國原廠；台灣代理查無','B'],
+   ['ETSC-200／300 電動履帶爬梯機','履帶式爬樓梯機　標示 200／300 kg','查無公開資料','查無（樓梯機，不適合當坡道車）','查無','查無','無','查無公開資料','全能勝科技（台灣通路）','B'],
+   ['Microlift P15SE','電動拖板車　1500 kg','3%','<span class="bad">不達標</span>','查無','24V 20Ah 鋰電池','拖板車','查無（無新台幣報價）','歐洲經銷頁；台灣代理查無','B']
+  ];
+  var t=document.getElementById('tbl'),h='<thead><tr>'+H.map(function(x){return'<th>'+x+'</th>'}).join('')+'</tr></thead><tbody>';
+  R.forEach(function(r){h+='<tr>'+r.map(function(c){return'<td>'+c+'</td>'}).join('')+'</tr>'});
+  t.innerHTML=h+'</tbody>';
+  var S=[
+   ['A','力牛高強 DS-10L','https://www.lilew.com.tw/products/info.php?id=37921&title_id=1192'],
+   ['A','力牛高強 DS-18L','https://www.lilew.com.tw/products/info.php?id=5558&title_id=1192'],
+   ['A','力牛高強 DS-20L（爬坡欄位值被截斷，未採用）','https://www.lilew.com.tw/products/info.php?id=5559'],
+   ['A','力牛高強 小猛牛（停售）','https://www.lilew.com.tw/products/info.php?id=5560&title_id=1192'],
+   ['A','力牛高強 F7','https://www.lilew.com.tw/products/info.php?id=49551&title_id=1192'],
+   ['B','力牛高強 F20（業者宣傳報導）','https://money.udn.com/money/story/5639/9099696'],
+   ['B','力牛機械（另一家公司）電動升降台車','https://www.liniu.com.tw/product-detail-998204.html'],
+   ['A','恆智 PPT 電動拖板車','https://www.liftruck.com.tw/zh-tw/product-45775/%E8%87%AA%E8%B5%B0%E5%BC%8F%E5%85%A8%E9%9B%BB%E5%8B%95%E6%8B%96%E6%9D%BF%E8%BB%8A-2-0-2-5-3-0-4-0%E5%99%B8-PPT-20-25-30-40.html'],
+   ['A','恆智 PPS 電動堆高機','https://www.liftruck.com.tw/zh-tw/product-555136/%E8%87%AA%E8%B5%B0%E5%BC%8F%E5%85%A8%E9%9B%BB%E5%8B%95%E5%A0%86%E9%AB%98%E6%A9%9F-0-9%E5%99%B8-1-0%E5%99%B8-1-5%E5%99%B8-2-0%E5%99%B8-PPS-09-10-15-20-AC-DC.html'],
+   ['A','恆智 電動升降平台 ELT-02~50','https://www.liftruck.com.tw/zh-tw/product-555371/%E9%9B%BB%E5%8B%95%E5%8D%87%E9%99%8D%E5%B9%B3%E5%8F%B0%EF%BC%88200-kg-5000-kg%EF%BC%89-ELT-02~50.html'],
+   ['A','日光 FELT-300','https://www.sunlight99.com.tw/page/product/show.aspx?num=182&lang=TW'],
+   ['A','日光 ETSM-250（官網文章）','https://www.sunlight99.com.tw/page/news/show.aspx?num=1171&lang=TW'],
+   ['B','日光 ETSL-250（科研市集，價格）','https://www.sciket.com/product/3992804'],
+   ['B','晟豐農業 名輪電動搬運車','https://www.dato.com.tw/product-detail-2489721.html'],
+   ['B','名輪科技 電動手推車','https://www.minglun.com.tw/1-trolley.html'],
+   ['B','全能勝科技 ETSC-300 履帶爬梯機','https://www.niuto.com.tw/product-detail-3523060.html'],
+   ['B','Hillver HMC-300P2（印尼經銷）','https://indotara.co.id/product/19757/stair-climber-electric-moving-cart-hmc-300p2'],
+   ['B','Jaroc 輔助台車（日本）','https://pr.mono.ipros.com/jaroc149882/product/detail/2000364234/'],
+   ['B','MasterMover SmartMover','https://www.mastermover.com/range/smartmover'],
+   ['B','Microlift P15SE（歐洲經銷）','https://www.exapro.com/microlift-p15se-p260421395/']
+  ];
+  document.getElementById('src').innerHTML=S.map(function(s){return'<li><b>['+s[0]+']</b> '+s[1]+'<br><a href="'+s[2]+'" target="_blank" rel="noopener">'+s[2]+'</a></li>'}).join('');
+})();
+</script>
+</body>
+</html>
